@@ -12,6 +12,8 @@ namespace SystemMonitor.UI.ViewModels
 
         private readonly IScheduler _scheduler;
 
+        private List<ProcessSnapshot> _allProcesses = [];
+
         #endregion
 
         #region Constructor
@@ -45,6 +47,9 @@ namespace SystemMonitor.UI.ViewModels
         [ObservableProperty]
         private long _diskBytesWritten;
 
+        [ObservableProperty]
+        private string _filterText = string.Empty;
+
         public ObservableCollection<ProcessSnapshot> Processes { get; }
 
         #endregion
@@ -62,18 +67,36 @@ namespace SystemMonitor.UI.ViewModels
                 DiskBytesRead = e.Metrics.DiskBytesRead;
                 DiskBytesWritten = e.Metrics.DiskBytesWritten;
 
-                Processes.Clear();
-                foreach (var process in e.Processes)
-                {
-                    Processes.Add(process);
-                }
+                _allProcesses = e.Processes.ToList();
+                ApplyFilter();
             });
         }
 
         #endregion
 
-        #region IDisposable implementation
+        #region Process related
 
+        partial void OnFilterTextChanged(string value)
+        {
+            ApplyFilter();
+        }
+
+        private void ApplyFilter()
+        {
+            var filtered = string.IsNullOrWhiteSpace(FilterText)
+                ? _allProcesses
+                : _allProcesses.Where(p => p.Name.Contains(FilterText, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            Processes.Clear();
+            foreach (var process in filtered)
+            {
+                Processes.Add(process);
+            }
+        }
+
+        #endregion
+
+        #region IDisposable implementation
 
         public void Dispose()
         {
