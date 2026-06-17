@@ -5,8 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SystemMonitor.UI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="System Monitor" Height="600" Width="900">
+    <StackPanel Margin="20">
+        <TextBlock Text="CPU:" FontWeight="Bold" />
+        <TextBlock Text="{Binding CpuUsagePercent}" Margin="0,0,0,10" />
 
-    </Grid>
+        <TextBlock Text="Memoria:" FontWeight="Bold" />
+        <TextBlock Text="{Binding MemoryUsagePercent}" Margin="0,0,0,10" />
+
+        <TextBlock Text="Red recibida:" FontWeight="Bold" />
+        <TextBlock Text="{Binding NetworkBytesReceived}" Margin="0,0,0,10" />
+
+        <TextBlock Text="Red enviada:" FontWeight="Bold" />
+        <TextBlock Text="{Binding NetworkBytesSent}" Margin="0,0,0,10" />
+
+        <TextBlock Text="Disco leído:" FontWeight="Bold" />
+        <TextBlock Text="{Binding DiskBytesRead}" Margin="0,0,0,10" />
+
+        <TextBlock Text="Disco escrito:" FontWeight="Bold" />
+        <TextBlock Text="{Binding DiskBytesWritten}" Margin="0,0,0,10" />
+    </StackPanel>
 </Window>

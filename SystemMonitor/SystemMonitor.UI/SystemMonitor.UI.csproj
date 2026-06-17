@@ -23,4 +23,8 @@
     <ProjectReference Include="..\SystemMonitor.Services\SystemMonitor.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\" />
+  </ItemGroup>
+
 </Project>
