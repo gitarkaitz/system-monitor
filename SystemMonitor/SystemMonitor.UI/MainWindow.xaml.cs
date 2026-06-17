@@ -9,6 +9,7 @@ namespace SystemMonitor.UI
         {
             InitializeComponent();
             DataContext = viewModel;
+            Closed += (s, e) => viewModel.Dispose();
         }
     }
 }

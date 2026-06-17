@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:SystemMonitor.UI"
         mc:Ignorable="d"
         Title="System Monitor" Height="600" Width="900">
+    
     <StackPanel Margin="20">
         <TextBlock Text="CPU:" FontWeight="Bold" />
         <TextBlock Text="{Binding CpuUsagePercent}" Margin="0,0,0,10" />
@@ -24,5 +25,15 @@
 
         <TextBlock Text="Disco escrito:" FontWeight="Bold" />
         <TextBlock Text="{Binding DiskBytesWritten}" Margin="0,0,0,10" />
+        
+        <TextBlock Text="Procesos:" FontWeight="Bold" Margin="0,10,0,0" />
+        <ListBox ItemsSource="{Binding Processes}" Height="200">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        
     </StackPanel>
 </Window>

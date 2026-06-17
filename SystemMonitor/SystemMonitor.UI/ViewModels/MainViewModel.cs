@@ -2,35 +2,25 @@
 using SystemMonitor.Data.Models;
 using SystemMonitor.Services.Interfaces;
 using System.Collections.ObjectModel;
-using System.Windows.Threading;
+using System.Windows;
 
 namespace SystemMonitor.UI.ViewModels
 {
-    public partial class MainViewModel : ObservableObject
+    public partial class MainViewModel : ObservableObject, IDisposable
     {
         #region Fields
 
-        private readonly IMetricsService _metricsService;
-        private readonly IProcessService _processService;
-        private readonly DispatcherTimer _timer;
+        private readonly IScheduler _scheduler;
 
         #endregion
 
         #region Constructor
 
-        public MainViewModel(IMetricsService metricsService, IProcessService processService)
+        public MainViewModel(IScheduler scheduler)
         {
-            _metricsService = metricsService;
-            _processService = processService;
-
+            _scheduler = scheduler;
             Processes = new ObservableCollection<ProcessSnapshot>();
-
-            _timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            _timer.Tick += async (s, e) => await RefreshDataAsync();
-            _timer.Start();
+            _scheduler.OnTick += Scheduler_OnTick;
         }
 
         #endregion
@@ -59,26 +49,35 @@ namespace SystemMonitor.UI.ViewModels
 
         #endregion
 
-        #region Methods
+        #region Event Handlers
 
-        private async Task RefreshDataAsync()
+        private void Scheduler_OnTick(object? sender, SchedulerTickEventArgs e)
         {
-            var metrics = await _metricsService.GetCurrentMetricsAsync();
-
-            CpuUsagePercent = metrics.CpuUsagePercent;
-            MemoryUsagePercent = metrics.MemoryUsagePercent;
-            NetworkBytesReceived = metrics.NetworkBytesReceived;
-            NetworkBytesSent = metrics.NetworkBytesSent;
-            DiskBytesRead = metrics.DiskBytesRead;
-            DiskBytesWritten = metrics.DiskBytesWritten;
-
-            var processes = await _processService.GetCurrentProcessesAsync();
-
-            Processes.Clear();
-            foreach (var process in processes)
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                Processes.Add(process);
-            }
+                CpuUsagePercent = e.Metrics.CpuUsagePercent;
+                MemoryUsagePercent = e.Metrics.MemoryUsagePercent;
+                NetworkBytesReceived = e.Metrics.NetworkBytesReceived;
+                NetworkBytesSent = e.Metrics.NetworkBytesSent;
+                DiskBytesRead = e.Metrics.DiskBytesRead;
+                DiskBytesWritten = e.Metrics.DiskBytesWritten;
+
+                Processes.Clear();
+                foreach (var process in e.Processes)
+                {
+                    Processes.Add(process);
+                }
+            });
+        }
+
+        #endregion
+
+        #region IDisposable implementation
+
+
+        public void Dispose()
+        {
+            _scheduler.OnTick -= Scheduler_OnTick;
         }
 
         #endregion
