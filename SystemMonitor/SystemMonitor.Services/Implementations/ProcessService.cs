@@ -30,6 +30,26 @@ namespace SystemMonitor.Services.Implementations
             return Task.FromResult<IEnumerable<ProcessSnapshot>>(snapshots);
         }
 
+        public bool KillProcess(int processId)
+        {
+            try
+            {
+                var process = Process.GetProcessById(processId);
+                process.Kill();
+                return true;
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Process {ProcessId} not found", processId);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error killing process {ProcessId}", processId);
+                return false;
+            }
+        }
+
         #endregion
 
         #region Private Methods

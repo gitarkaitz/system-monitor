@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using SystemMonitor.Data.Interfaces;
 using SystemMonitor.Services.Interfaces;
 
@@ -15,6 +16,12 @@ namespace SystemMonitor.Services.Implementations
         private readonly IProcessSnapshotRepository _processRepository;
         private readonly ILogger<Scheduler> _logger;
         private PeriodicTimer? _timer;
+
+        #endregion
+
+        #region Public Events
+
+        public event EventHandler<SchedulerTickEventArgs>? OnTick;
 
         #endregion
 
@@ -68,6 +75,11 @@ namespace SystemMonitor.Services.Implementations
                 await _processRepository.AddRangeAsync(processes);
 
                 await _alertService.EvaluateAsync(metrics);
+                OnTick?.Invoke(this, new SchedulerTickEventArgs
+                {
+                    Metrics = metrics,
+                    Processes = processes
+                });
             }
             catch (Exception ex)
             {

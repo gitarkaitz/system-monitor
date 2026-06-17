@@ -5,8 +5,69 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SystemMonitor.UI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="System Monitor" Height="600" Width="900">
 
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="CPU:" FontWeight="Bold" />
+            <TextBlock Text="{Binding CpuUsagePercent}" Margin="0,0,0,10" />
+            <TextBlock Text="Memoria:" FontWeight="Bold" />
+            <TextBlock Text="{Binding MemoryUsagePercent}" Margin="0,0,0,10" />
+            <TextBlock Text="Red recibida:" FontWeight="Bold" />
+            <TextBlock Text="{Binding NetworkBytesReceived}" Margin="0,0,0,10" />
+            <TextBlock Text="Red enviada:" FontWeight="Bold" />
+            <TextBlock Text="{Binding NetworkBytesSent}" Margin="0,0,0,10" />
+            <TextBlock Text="Disco leído:" FontWeight="Bold" />
+            <TextBlock Text="{Binding DiskBytesRead}" Margin="0,0,0,10" />
+            <TextBlock Text="Disco escrito:" FontWeight="Bold" />
+            <TextBlock Text="{Binding DiskBytesWritten}" Margin="0,0,0,10" />
+            <TextBlock Text="Filtrar por nombre:" FontWeight="Bold" Margin="0,10,0,0" />
+            <TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" 
+                  Width="200" Margin="0,0,0,10" HorizontalAlignment="Left" />
+        </StackPanel>
+
+        <DataGrid Grid.Row="1"
+              ItemsSource="{Binding Processes}" 
+              SelectedItem="{Binding SelectedProcess}"
+              AutoGenerateColumns="False" 
+              IsReadOnly="True"
+              HorizontalScrollBarVisibility="Disabled">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Detener proceso" Command="{Binding StopProcessCommand}" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Status}" Value="Unresponsive">
+                            <Setter Property="Background" Value="#FFCDD2" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="Suspended">
+                            <Setter Property="Background" Value="#FFF9C4" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="PID" Binding="{Binding ProcessId}" Width="80" />
+                <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="200" />
+                <DataGridTextColumn Header="Memoria (MB)" Binding="{Binding MemoryBytes}" Width="120" />
+                <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="100" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Button Grid.Row="2"
+            Content="Detener proceso" 
+            Command="{Binding StopProcessCommand}" 
+            HorizontalAlignment="Left" 
+            Margin="0,10,0,0" 
+            Padding="10,5" />
     </Grid>
 </Window>

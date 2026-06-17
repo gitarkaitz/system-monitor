@@ -5,5 +5,6 @@ namespace SystemMonitor.Services.Interfaces
     public interface IProcessService
     {
         Task<IEnumerable<ProcessSnapshot>> GetCurrentProcessesAsync();
+        bool KillProcess(int processId);
     }
 }

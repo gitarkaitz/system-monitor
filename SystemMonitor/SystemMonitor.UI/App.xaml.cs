@@ -8,6 +8,7 @@ using SystemMonitor.Data.Interfaces;
 using SystemMonitor.Data.Repositories;
 using SystemMonitor.Services.Implementations;
 using SystemMonitor.Services.Interfaces;
+using SystemMonitor.UI.ViewModels;
 
 namespace SystemMonitor.UI
 {
@@ -66,6 +67,7 @@ namespace SystemMonitor.UI
             services.AddSingleton<IScheduler, Scheduler>();
 
             services.AddTransient<MainWindow>();
+            services.AddTransient<MainViewModel>();
         }
 
         private void ApplyMigrations()
