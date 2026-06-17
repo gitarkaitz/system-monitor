@@ -1,8 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using SystemMonitor.Data.Models;
-using SystemMonitor.Services.Interfaces;
+using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Windows;
+using SystemMonitor.Data.Models;
+using SystemMonitor.Services.Implementations;
+using SystemMonitor.Services.Interfaces;
 
 namespace SystemMonitor.UI.ViewModels
 {
@@ -14,16 +16,7 @@ namespace SystemMonitor.UI.ViewModels
 
         private List<ProcessSnapshot> _allProcesses = [];
 
-        #endregion
-
-        #region Constructor
-
-        public MainViewModel(IScheduler scheduler)
-        {
-            _scheduler = scheduler;
-            Processes = new ObservableCollection<ProcessSnapshot>();
-            _scheduler.OnTick += Scheduler_OnTick;
-        }
+        private readonly IProcessService _processService;
 
         #endregion
 
@@ -50,7 +43,22 @@ namespace SystemMonitor.UI.ViewModels
         [ObservableProperty]
         private string _filterText = string.Empty;
 
-        public ObservableCollection<ProcessSnapshot> Processes { get; }
+        public ObservableCollection<ProcessRowViewModel> Processes { get; }
+
+        [ObservableProperty]
+        private ProcessRowViewModel? _selectedProcess;
+
+        #endregion
+
+        #region Constructor
+
+        public MainViewModel(IScheduler scheduler, IProcessService processService) 
+        {
+            _scheduler = scheduler;
+            _processService = processService;
+            Processes = new ObservableCollection<ProcessRowViewModel>();
+            _scheduler.OnTick += Scheduler_OnTick;
+        }
 
         #endregion
 
@@ -68,9 +76,10 @@ namespace SystemMonitor.UI.ViewModels
                 DiskBytesWritten = e.Metrics.DiskBytesWritten;
 
                 _allProcesses = e.Processes.ToList();
-                ApplyFilter();
+                UpdateProcessRows();
             });
         }
+
 
         #endregion
 
@@ -81,17 +90,72 @@ namespace SystemMonitor.UI.ViewModels
             ApplyFilter();
         }
 
+        private void UpdateProcessRows()
+        {
+            var currentIds = _allProcesses.Select(p => p.ProcessId).ToHashSet();
+
+            var toRemove = Processes.Where(row => !currentIds.Contains(row.ProcessId)).ToList();
+            foreach (var row in toRemove)
+            {
+                Processes.Remove(row);
+            }
+
+            foreach (var snapshot in _allProcesses)
+            {
+                var existingRow = Processes.FirstOrDefault(row => row.ProcessId == snapshot.ProcessId);
+
+                if (existingRow != null)
+                {
+                    existingRow.UpdateFrom(snapshot);
+                }
+                else
+                {
+                    Processes.Add(new ProcessRowViewModel(snapshot));
+                }
+            }
+
+            ApplyFilter();
+        }
+
         private void ApplyFilter()
         {
-            var filtered = string.IsNullOrWhiteSpace(FilterText)
-                ? _allProcesses
-                : _allProcesses.Where(p => p.Name.Contains(FilterText, StringComparison.OrdinalIgnoreCase)).ToList();
-
-            Processes.Clear();
-            foreach (var process in filtered)
+            if (string.IsNullOrWhiteSpace(FilterText))
             {
-                Processes.Add(process);
+                return;
             }
+
+            var toHide = Processes.Where(row => !row.Name.Contains(FilterText, StringComparison.OrdinalIgnoreCase)).ToList();
+            foreach (var row in toHide)
+            {
+                Processes.Remove(row);
+            }
+        }
+
+        [RelayCommand(CanExecute = nameof(CanStopProcess))]
+        private void StopProcess()
+        {
+            if (SelectedProcess == null)
+            {
+                return;
+            }
+
+            var success = _processService.KillProcess(SelectedProcess.ProcessId);
+
+            if (success)
+            {
+                _allProcesses.RemoveAll(p => p.ProcessId == SelectedProcess.ProcessId);
+                ApplyFilter();
+            }
+        }
+
+        private bool CanStopProcess()
+        {
+            return SelectedProcess != null;
+        }
+
+        partial void OnSelectedProcessChanged(ProcessRowViewModel? value)
+        {
+            StopProcessCommand.NotifyCanExecuteChanged();
         }
 
         #endregion

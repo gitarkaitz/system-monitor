@@ -6,36 +6,43 @@
         xmlns:local="clr-namespace:SystemMonitor.UI"
         mc:Ignorable="d"
         Title="System Monitor" Height="600" Width="900">
-    
-    <StackPanel Margin="20">
-        <TextBlock Text="CPU:" FontWeight="Bold" />
-        <TextBlock Text="{Binding CpuUsagePercent}" Margin="0,0,0,10" />
 
-        <TextBlock Text="Memoria:" FontWeight="Bold" />
-        <TextBlock Text="{Binding MemoryUsagePercent}" Margin="0,0,0,10" />
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <TextBlock Text="Red recibida:" FontWeight="Bold" />
-        <TextBlock Text="{Binding NetworkBytesReceived}" Margin="0,0,0,10" />
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="CPU:" FontWeight="Bold" />
+            <TextBlock Text="{Binding CpuUsagePercent}" Margin="0,0,0,10" />
+            <TextBlock Text="Memoria:" FontWeight="Bold" />
+            <TextBlock Text="{Binding MemoryUsagePercent}" Margin="0,0,0,10" />
+            <TextBlock Text="Red recibida:" FontWeight="Bold" />
+            <TextBlock Text="{Binding NetworkBytesReceived}" Margin="0,0,0,10" />
+            <TextBlock Text="Red enviada:" FontWeight="Bold" />
+            <TextBlock Text="{Binding NetworkBytesSent}" Margin="0,0,0,10" />
+            <TextBlock Text="Disco leído:" FontWeight="Bold" />
+            <TextBlock Text="{Binding DiskBytesRead}" Margin="0,0,0,10" />
+            <TextBlock Text="Disco escrito:" FontWeight="Bold" />
+            <TextBlock Text="{Binding DiskBytesWritten}" Margin="0,0,0,10" />
+            <TextBlock Text="Filtrar por nombre:" FontWeight="Bold" Margin="0,10,0,0" />
+            <TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" 
+                  Width="200" Margin="0,0,0,10" HorizontalAlignment="Left" />
+        </StackPanel>
 
-        <TextBlock Text="Red enviada:" FontWeight="Bold" />
-        <TextBlock Text="{Binding NetworkBytesSent}" Margin="0,0,0,10" />
-
-        <TextBlock Text="Disco leído:" FontWeight="Bold" />
-        <TextBlock Text="{Binding DiskBytesRead}" Margin="0,0,0,10" />
-
-        <TextBlock Text="Disco escrito:" FontWeight="Bold" />
-        <TextBlock Text="{Binding DiskBytesWritten}" Margin="0,0,0,10" />
-
-        <TextBlock Text="Procesos:" FontWeight="Bold" Margin="0,10,0,0" />
-        <TextBlock Text="Filtrar por nombre:" FontWeight="Bold" Margin="15,10,0,0" />
-        <TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" 
-         Width="200" Margin="15,0,0,10" HorizontalAlignment="Left"/>
-        
-        <DataGrid ItemsSource="{Binding Processes}" 
-          AutoGenerateColumns="False" 
-          IsReadOnly="True"
-          HorizontalScrollBarVisibility="Disabled"
-          Height="300">
+        <DataGrid Grid.Row="1"
+              ItemsSource="{Binding Processes}" 
+              SelectedItem="{Binding SelectedProcess}"
+              AutoGenerateColumns="False" 
+              IsReadOnly="True"
+              HorizontalScrollBarVisibility="Disabled">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Detener proceso" Command="{Binding StopProcessCommand}" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
                     <Style.Triggers>
@@ -56,5 +63,11 @@
             </DataGrid.Columns>
         </DataGrid>
 
-    </StackPanel>
+        <Button Grid.Row="2"
+            Content="Detener proceso" 
+            Command="{Binding StopProcessCommand}" 
+            HorizontalAlignment="Left" 
+            Margin="0,10,0,0" 
+            Padding="10,5" />
+    </Grid>
 </Window>
