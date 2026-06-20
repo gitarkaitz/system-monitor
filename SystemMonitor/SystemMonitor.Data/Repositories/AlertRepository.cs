@@ -66,6 +66,12 @@ namespace SystemMonitor.Data.Repositories
             await _context.AlertEvents.Where(e => e.TriggeredAt < cutoff).ExecuteDeleteAsync();
         }
 
+        public async Task UpdateEventAsync(AlertEvent alertEvent)
+        {
+            _context.AlertEvents.Update(alertEvent);
+            await _context.SaveChangesAsync();
+        }
+
         #endregion
     }
 }

@@ -8,5 +8,6 @@ namespace SystemMonitor.Services.Interfaces
         Task<IEnumerable<Alert>> GetActiveAlertsAsync();
         Task AddAlertAsync(Alert alert);
         Task UpdateAlertAsync(Alert alert);
+        event EventHandler<AlertEvent>? OnAlertTriggered;
     }
 }

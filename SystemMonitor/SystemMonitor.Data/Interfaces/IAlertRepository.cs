@@ -9,5 +9,6 @@ namespace SystemMonitor.Data.Interfaces
         Task<IEnumerable<Alert>> GetAllActiveAsync();
         Task AddEventAsync(AlertEvent alertEvent);
         Task<IEnumerable<AlertEvent>> GetRecentEventsAsync(int count);
+        Task UpdateEventAsync(AlertEvent alertEvent);
     }
 }

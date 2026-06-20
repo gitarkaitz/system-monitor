@@ -10,6 +10,7 @@ using SystemMonitor.Data.Models;
 using SystemMonitor.Data.Repositories;
 using SystemMonitor.Services.Implementations;
 using SystemMonitor.Services.Interfaces;
+using SystemMonitor.UI.Services;
 using SystemMonitor.UI.ViewModels;
 
 namespace SystemMonitor.UI
@@ -122,6 +123,7 @@ namespace SystemMonitor.UI
 
         protected override void OnExit(ExitEventArgs e)
         {
+            _serviceProvider?.GetService<AlertNotificationService>()?.Dispose();
             _cancellationTokenSource?.Cancel();
             _serviceProvider?.Dispose();
             base.OnExit(e);
