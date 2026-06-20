@@ -9,8 +9,11 @@ namespace SystemMonitor.Services.Implementations
     {
         #region Fields
 
+        public event EventHandler<AlertEvent>? OnAlertTriggered;
+
         private readonly IAlertRepository _alertRepository;
         private readonly ILogger<AlertService> _logger;
+        private readonly Dictionary<int, bool> _alertStates = new();
 
         #endregion
 
@@ -33,10 +36,21 @@ namespace SystemMonitor.Services.Implementations
             foreach (var alert in activeAlerts)
             {
                 var currentValue = GetMetricValue(metrics, alert.MetricType);
-                if (IsThresholdExceeded(currentValue, alert.Threshold, alert.Condition))
+
+                if (IsNetworkMetricAtZero(alert.MetricType, currentValue))
+                {
+                    continue;
+                }
+
+                var isConditionMet = IsThresholdExceeded(currentValue, alert.Threshold, alert.Condition);
+                var wasAlreadyTriggered = _alertStates.TryGetValue(alert.Id, out var previousState) && previousState;
+
+                if (isConditionMet && !wasAlreadyTriggered)
                 {
                     await TriggerAlertAsync(alert, currentValue);
                 }
+
+                _alertStates[alert.Id] = isConditionMet;
             }
         }
 
@@ -60,6 +74,12 @@ namespace SystemMonitor.Services.Implementations
         #endregion
 
         #region Private Methods
+
+        private bool IsNetworkMetricAtZero(AlertMetricType metricType, double value)
+        {
+            var isNetworkMetric = (metricType == AlertMetricType.NetworkReceived || metricType == AlertMetricType.NetworkSent) ? true : false;
+            return isNetworkMetric && value == 0;
+        }
 
         private double GetMetricValue(MetricSnapshot metrics, AlertMetricType metricType)
         {
@@ -114,7 +134,7 @@ namespace SystemMonitor.Services.Implementations
             };
 
             await _alertRepository.AddEventAsync(alertEvent);
-
+            OnAlertTriggered?.Invoke(this, alertEvent);
             _logger.LogWarning("Alert '{AlertName}' triggered. Value: {Value}, Threshold: {Threshold}", alert.Name, triggeredValue, alert.Threshold);
         }
 
